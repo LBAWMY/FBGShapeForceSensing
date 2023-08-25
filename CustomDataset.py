@@ -1,6 +1,7 @@
 import torch
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader
+import numpy as np
 
 # Define a custom dataset class
 class CustomDataset(Dataset):
@@ -46,6 +47,15 @@ class CustomDataset(Dataset):
         self.twist_max_tensor = torch.tensor(self.twist.max(axis=0), dtype=torch.float32)
         self.pos_xyz_min_tensor = torch.tensor(self.pos_xyz.min(axis=0), dtype=torch.float32)
         self.pos_xyz_max_tensor = torch.tensor(self.pos_xyz.max(axis=0), dtype=torch.float32)
+
+        # save the statistics of the input data
+        data_info_name = data_dir.replace(".csv", "_info.npz")
+        np.savez(data_info_name, strain_mean=self.strain.mean(axis=0), strain_std=self.strain.std(axis=0),
+                 curvature_min=self.curvature.min(axis=0), curvature_max=self.curvature.max(axis=0),
+                 force_min=self.force.min(axis=0), force_max=self.force.max(axis=0),
+                 force_loc_min=self.force_loc_int.min(axis=0), force_loc_max=self.force_loc_int.max(axis=0),
+                 twist_min=self.twist.min(axis=0), twist_max=self.twist.max(axis=0),
+                 pos_xyz_min=self.pos_xyz.min(axis=0), pos_xyz_max=self.pos_xyz.max(axis=0))
 
     def __len__(self):
         return len(self.data)
