@@ -1,7 +1,7 @@
 # FBGShapeForceSensing
 
 ## Introduction
-xxx
+TODO
 ### Pre-requisites
 1. Create a virtual environment with Python 3.9
 ```shell
