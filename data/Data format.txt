@@ -1,0 +1,7 @@
+Data format (260 in total):
+40 strain (input); 36 curvature (output); 1 direction (output); 36 force (output); 1 force location;
+36 twist (reference); 37 position x (reference); 37 position y (reference); 37 position z (reference)
+
+Prediction data format (260 in total):
+RAW: 40 strain + 36 curvature + 1 direction + 36 force + 1 force location +  36 twist + 37*3 position_xyz;
+Prediction: 36 curvature + 1 direction + 36 force + 1 force location +  36 twist + 37*3 position_xyz + 37 pos_x_shape_err + 37 pos_yz_shape_err + 2 pos_x + yznorm_tip_err
