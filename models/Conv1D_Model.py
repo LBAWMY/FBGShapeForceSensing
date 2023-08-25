@@ -49,8 +49,8 @@ class Conv1DNetwork(nn.Module):
 
 def test():
     # Hyperparameters
-    input_size = 30
-    output_size = [30, 30, 1]
+    input_size = 40
+    output_size = [36, 2, 36, 1, 36]
     # Create an instance of the Conv1DNetwork
     model = Conv1DNetwork(input_size, output_size)
 

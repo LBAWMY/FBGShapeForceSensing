@@ -37,10 +37,10 @@ class LSTMNetwork(nn.Module):
 
 def test():
     # Hyperparameters
-    input_size = 30
+    input_size = 40
     hidden_size = 64
     num_layers = 3
-    output_size = [30, 30, 1]
+    output_size = [36, 2, 36, 1, 36]
 
     # Create an instance of the LSTMNetwork
     model = LSTMNetwork(input_size, hidden_size, num_layers, output_size)
