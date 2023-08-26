@@ -1,7 +1,7 @@
 # FBGShapeForceSensing
 
 ## Introduction
-TODO
+This project is to acheve the shape and force sensing of a soft robot with FBG sensors. The sensing process is based on the deep learning method. The training process is based on the [PyTorch](https://pytorch.org/) framework.
 ### Pre-requisites
 1. Create a virtual environment with Python 3.9
     ```shell
