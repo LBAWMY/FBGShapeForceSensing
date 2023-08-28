@@ -67,15 +67,17 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()  # Zero the gradients
 
         curvature_pred, dir_pred, force_pred, force_loc_pred, twist_pred = model(strain_features)
+        force_max_index = torch.argmax(force_pred, dim=1) / (dataset.force_loc_max_tensor - dataset.force_loc_min_tensor)
 
         cur_loss = mse(curvature_pred, curvature_target)
         force_loss = mse(force_pred, force_target)
         # loss3 = bce(outputs3, targets3)
         dir_loss = ce(dir_pred, dir_target)
         force_loc_loss = mse(force_loc_pred, force_loc_target)
+        force_loc1_loss = mse(force_max_index, force_loc_target)
         twist_loss = mse(twist_pred, twist_target)
 
-        loss = cur_loss + force_loss + force_loc_loss + twist_loss # + dir_loss
+        loss = cur_loss + force_loss + force_loc_loss + force_loc1_loss + twist_loss # + dir_loss
         loss.backward()  # Backpropagation
         optimizer.step()  # Update weights
 
