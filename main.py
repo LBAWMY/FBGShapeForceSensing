@@ -15,7 +15,8 @@ import pandas as pd
 # train_dataset = CustomDataset(data_dir='./data/data20230819_1.csv')
 # test_dataset = CustomDataset(data_dir='./data/data20230819_2.csv')
 # dataset = CustomDataset(data_dir='./data/data20230819_full.csv')
-dataset = CustomDataset(data_dir='./data/data20230824_1.csv')
+# dataset = CustomDataset(data_dir='./data/data20230824_1.csv')
+dataset = CustomDataset(data_dir='./data/data20230828_12c.csv')
 train_dataset, test_dataset = torch.utils.data.random_split(dataset, [int(len(dataset) * 0.8), len(dataset) - int(len(dataset) * 0.8)])
 # Create DataLoader for batch processing
 batch_size = 256
@@ -25,9 +26,9 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 # Initialize the model
 # # ------------------------------------------------------------------------------------------
 # option1: Hyperparameters of Conv1DNetwork
-# input_size = 40
-# output_size = [36, 2, 36, 1, 36]
-# model = Conv1DNetwork(input_size, output_size)
+input_size = 40
+output_size = [36, 2, 36, 1, 36]
+model = Conv1DNetwork(input_size, output_size)
 # ------------------------------------------------------------------------------------------
 # # option2: Hyperparameters of LSTMNetwork
 # input_size = 40
@@ -37,11 +38,11 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 # model = LSTMNetwork(input_size, hidden_size, num_layers, output_size)
 # # ------------------------------------------------------------------------------------------
 # option3: Hyperparameters of FCNetwork
-input_size = 40
-hidden_size = 64
-num_layers = 4  # You can increase this value to have more layers
-output_size = [36, 2, 36, 1, 36]
-model = FullyConnectedNetwork(input_size, hidden_size, num_layers, output_size)
+# input_size = 40
+# hidden_size = 64
+# num_layers = 4  # You can increase this value to have more layers
+# output_size = [36, 2, 36, 1, 36]
+# model = FullyConnectedNetwork(input_size, hidden_size, num_layers, output_size)
 
 # Define loss function and optimizer
 mse = nn.MSELoss()
