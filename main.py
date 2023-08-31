@@ -69,6 +69,7 @@ for epoch in range(num_epochs):
 
         curvature_pred, dir_pred, force_pred, force_loc_pred, twist_pred = model(strain_features)
         force_max_index = torch.argmax(force_pred, dim=1) / (dataset.force_loc_max_tensor - dataset.force_loc_min_tensor)
+        # force_pred_max = torch.max(force_pred, dim=1)
 
         cur_loss = mse(curvature_pred, curvature_target)
         force_loss = mse(force_pred, force_target)

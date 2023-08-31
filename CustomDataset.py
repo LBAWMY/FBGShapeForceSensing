@@ -24,7 +24,7 @@ class CustomDataset(Dataset):
         self.dir[self.dir == -1.0] = 0
         self.dir[self.dir == 0.] = 0
         self.dir[self.dir == 1.0] = 1
-        self.force_norm = (self.force - self.force.min(axis=0)) / (self.force.max(axis=0) - self.force.min(axis=0) + self.eps)
+        self.force_norm = (self.force - self.force.min()) / (self.force.max() - self.force.min() + self.eps)
         self.force_loc_norm = (self.force_loc_float - self.force_loc_float.min(axis=0)) / (self.force_loc_float.max(axis=0) - self.force_loc_float.min(axis=0) + self.eps)
         self.twist_norm = (self.twist - self.twist.min(axis=0)) / (self.twist.max(axis=0) - self.twist.min(axis=0) + self.eps)
         self.pos_xyz_norm = (self.pos_xyz - self.pos_xyz.min(axis=0)) / (self.pos_xyz.max(axis=0) - self.pos_xyz.min(axis=0) + self.eps)
@@ -39,8 +39,8 @@ class CustomDataset(Dataset):
 
         self.curvature_min_tensor = torch.tensor(self.curvature.min(axis=0), dtype=torch.float32)
         self.curvature_max_tensor = torch.tensor(self.curvature.max(axis=0), dtype=torch.float32)
-        self.force_min_tensor = torch.tensor(self.force.min(axis=0), dtype=torch.float32)
-        self.force_max_tensor = torch.tensor(self.force.max(axis=0), dtype=torch.float32)
+        self.force_min_tensor = torch.tensor(self.force.min(), dtype=torch.float32)
+        self.force_max_tensor = torch.tensor(self.force.max(), dtype=torch.float32)
         self.force_loc_min_tensor = torch.tensor(self.force_loc_float.min(axis=0), dtype=torch.float32)
         self.force_loc_max_tensor = torch.tensor(self.force_loc_float.max(axis=0), dtype=torch.float32)
         self.twist_min_tensor = torch.tensor(self.twist.min(axis=0), dtype=torch.float32)
@@ -52,7 +52,7 @@ class CustomDataset(Dataset):
         data_info_name = data_dir.replace(".csv", "_info.npz")
         np.savez(data_info_name, strain_mean=self.strain.mean(axis=0), strain_std=self.strain.std(axis=0),
                  curvature_min=self.curvature.min(axis=0), curvature_max=self.curvature.max(axis=0),
-                 force_min=self.force.min(axis=0), force_max=self.force.max(axis=0),
+                 force_min=self.force.min(), force_max=self.force.max(),
                  force_loc_min=self.force_loc_float.min(axis=0), force_loc_max=self.force_loc_float.max(axis=0),
                  twist_min=self.twist.min(axis=0), twist_max=self.twist.max(axis=0),
                  pos_xyz_min=self.pos_xyz.min(axis=0), pos_xyz_max=self.pos_xyz.max(axis=0))
