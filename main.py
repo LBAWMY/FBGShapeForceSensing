@@ -69,10 +69,12 @@ for epoch in range(num_epochs):
 
         curvature_pred, dir_pred, force_pred, force_loc_pred, twist_pred = model(strain_features)
         force_max_index = torch.argmax(force_pred, dim=1) / (dataset.force_loc_max_tensor - dataset.force_loc_min_tensor)
-        # force_pred_max = torch.max(force_pred, dim=1)
+        force_pred_max = torch.norm(force_pred, dim=1)
+        force_target_max = torch.norm(force_target, dim=1)
 
         cur_loss = mse(curvature_pred, curvature_target)
-        force_loss = mse(force_pred, force_target)
+        # force_loss = mse(force_pred, force_target)
+        force_loss = mse(force_pred_max, force_target_max)
         # loss3 = bce(outputs3, targets3)
         dir_loss = ce(dir_pred, dir_target)
         force_loc_loss = mse(force_loc_pred, force_loc_target)
@@ -90,6 +92,7 @@ for epoch in range(num_epochs):
         running_twist_loss += twist_loss.item()
         running_loss += loss.item()
 
+        # TODO: add the force metrics: only focused on the maximum force
         # calculate the number of correct predictions
         # predicted_labels = (outputs3 >= 0.5).long() # Use 0.5 as threshold
         # predicted_labels = torch.argmax(dir_pred, dim=1)
@@ -101,8 +104,10 @@ for epoch in range(num_epochs):
         cur_err = torch.mean(torch.abs(cur_norm_err) * (dataset.curvature_max_tensor - dataset.curvature_min_tensor), axis=1)
         cur_err_metric += torch.sum(cur_err).item()
 
-        force_norm_err = force_pred - force_target
-        force_err = torch.mean(torch.abs(force_norm_err) * (dataset.force_max_tensor - dataset.force_min_tensor), axis=1)
+        # force_norm_err = force_pred - force_target
+        # force_err = torch.mean(torch.abs(force_norm_err) * (dataset.force_max_tensor - dataset.force_min_tensor), axis=1)
+        force_norm_err = force_pred_max - force_target_max
+        force_err = torch.abs(force_norm_err) * (dataset.force_max_tensor - dataset.force_min_tensor)
         force_err_metric += torch.sum(force_err).item()
 
         force_loc_norm_err = force_loc_pred - force_loc_target
@@ -151,7 +156,10 @@ for epoch in range(num_epochs):
             curvature_pred, dir_pred, force_pred, force_loc_pred, twist_pred = model(strain_features) #
 
             cur_loss = mse(curvature_pred, curvature_target)
-            force_loss = mse(force_pred, force_target)
+            force_pred_max = torch.norm(force_pred, dim=1)
+            force_target_max = torch.norm(force_target, dim=1)
+            force_loss = mse(force_pred_max, force_target_max)
+            # force_loss = mse(force_pred, force_target)
             # loss3 = bce(outputs3, targets3)
             dir_loss = ce(dir_pred, dir_target)
             force_loc_loss = mse(force_loc_pred, force_loc_target)
@@ -183,8 +191,10 @@ for epoch in range(num_epochs):
             cur_err = torch.mean(torch.abs(cur_norm_err) * (dataset.curvature_max_tensor - dataset.curvature_min_tensor), axis=1)
             cur_err_metric += torch.sum(cur_err).item()
 
-            force_norm_err = force_pred - force_target
-            force_err = torch.mean(torch.abs(force_norm_err) * (dataset.force_max_tensor - dataset.force_min_tensor), axis=1)
+            # force_norm_err = force_pred - force_target
+            # force_err = torch.mean(torch.abs(force_norm_err) * (dataset.force_max_tensor - dataset.force_min_tensor), axis=1)
+            force_norm_err = force_pred_max - force_target_max
+            force_err = torch.abs(force_norm_err) * (dataset.force_max_tensor - dataset.force_min_tensor)
             force_err_metric += torch.sum(force_err).item()
 
             force_loc_norm_err = force_loc_pred - force_loc_target
