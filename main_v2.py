@@ -19,6 +19,7 @@ import pandas as pd
 # dataset = CustomDataset(data_dir='./data/data20230819_full.csv')
 # dataset = CustomDataset(data_dir='./data/data20230824_1.csv')
 dataset = HMDataset(data_dir='./data/data20230828_12c.csv')
+np.random.seed(1024)
 train_dataset, test_dataset = torch.utils.data.random_split(dataset, [int(len(dataset) * 0.8), len(dataset) - int(len(dataset) * 0.8)])
 # Create DataLoader for batch processing
 batch_size = 256
@@ -26,11 +27,11 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 # Initialize the model
-# # ------------------------------------------------------------------------------------------
-# # option1: Hyperparameters of Conv1DNetwork
-# input_size = 40
-# output_size = [36, 2, 1, 36, 36]
-# model = Conv1DNetwork(input_size, output_size)
+# ------------------------------------------------------------------------------------------
+# option1: Hyperparameters of Conv1DNetwork
+input_size = 40
+output_size = [36, 2, 1, 36, 36]
+model = Conv1DNetwork(input_size, output_size)
 # ------------------------------------------------------------------------------------------
 # # option2: Hyperparameters of LSTMNetwork
 # input_size = 40
@@ -39,12 +40,12 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 # output_size = [36, 2, 1, 36, 36]
 # model = LSTMNetwork(input_size, hidden_size, num_layers, output_size)
 # # ------------------------------------------------------------------------------------------
-# option3: Hyperparameters of FCNetwork
-input_size = 40
-hidden_size = 64
-num_layers = 4  # You can increase this value to have more layers
-output_size = [36, 2, 1, 36, 36]
-model = FullyConnectedNetwork(input_size, hidden_size, num_layers, output_size)
+# # option3: Hyperparameters of FCNetwork
+# input_size = 40
+# hidden_size = 64
+# num_layers = 4  # You can increase this value to have more layers
+# output_size = [36, 2, 1, 36, 36]
+# model = FullyConnectedNetwork(input_size, hidden_size, num_layers, output_size)
 
 # Define loss function and optimizer
 mse = nn.MSELoss()
@@ -305,7 +306,7 @@ with torch.no_grad():
         force_norm_err = np.abs(force_pred_dn_arr - force_target_dn_array)
         force_location_err = np.abs(force_loc_pred_dn_arr - force_loc_target_dn_array)
         # shape: 36 + 1 + 36 + 1 + 36 + 37*3 + 37 + 37 + 2 + 2 = 299
-        prediction = np.concatenate((curvature_pred_dn_arr, predicted_dir, force_pred_dn_arr, force_loc_pred_dn_arr, twist_pred_dn_arr, pos_xyz_pred_dn_arr, pos_x_shape_error, pos_yz_shape_error, pos_xyz_tip_error, force_norm_err, force_location_err), axis=1)
+        prediction = np.concatenate((curvature_pred_dn_arr, predicted_dir, force_pred_dn_array_out, force_loc_pred_dn_arr, twist_pred_dn_arr, pos_xyz_pred_dn_arr, pos_x_shape_error, pos_yz_shape_error, pos_xyz_tip_error, force_norm_err, force_location_err), axis=1)
         merged_result = np.concatenate((raw_data, prediction), axis=1)
 
         merged_results.extend(merged_result)
