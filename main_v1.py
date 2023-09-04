@@ -1,3 +1,6 @@
+# Author(s): Bin Li
+# Created on: 2023-09-04
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -27,7 +30,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 # # ------------------------------------------------------------------------------------------
 # option1: Hyperparameters of Conv1DNetwork
 input_size = 40
-output_size = [36, 2, 36, 1, 36]
+output_size = [36, 2, 1, 1, 36] # curvature_pred, dir_pred, force_pred, force_loc_pred, twist_pred
 model = Conv1DNetwork(input_size, output_size)
 # ------------------------------------------------------------------------------------------
 # # option2: Hyperparameters of LSTMNetwork
@@ -57,7 +60,7 @@ best_model_path = 'best_model.pth'
 writer = SummaryWriter()
 
 # Training loop
-num_epochs = 1000
+num_epochs = 800
 
 for epoch in range(num_epochs):
     running_cur_loss, running_force_loss, running_dir_loss, running_force_loc_loss, running_twist_loss, running_loss = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
@@ -68,8 +71,7 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()  # Zero the gradients
 
         curvature_pred, dir_pred, force_pred, force_loc_pred, twist_pred = model(strain_features)
-        force_max_index = torch.argmax(force_pred, dim=1) / (dataset.force_loc_max_tensor - dataset.force_loc_min_tensor)
-        force_pred_max = torch.norm(force_pred, dim=1)
+        force_pred_max = force_pred[:, 0]
         force_target_max = torch.norm(force_target, dim=1)
 
         cur_loss = mse(curvature_pred, curvature_target)
@@ -78,10 +80,9 @@ for epoch in range(num_epochs):
         # loss3 = bce(outputs3, targets3)
         dir_loss = ce(dir_pred, dir_target)
         force_loc_loss = mse(force_loc_pred, force_loc_target)
-        force_loc1_loss = mse(force_max_index, force_loc_target)
         twist_loss = mse(twist_pred, twist_target)
 
-        loss = cur_loss + force_loss + force_loc_loss + force_loc1_loss + twist_loss # + dir_loss
+        loss = cur_loss + force_loss + force_loc_loss + twist_loss # + dir_loss
         loss.backward()  # Backpropagation
         optimizer.step()  # Update weights
 
@@ -92,7 +93,6 @@ for epoch in range(num_epochs):
         running_twist_loss += twist_loss.item()
         running_loss += loss.item()
 
-        # TODO: add the force metrics: only focused on the maximum force
         # calculate the number of correct predictions
         # predicted_labels = (outputs3 >= 0.5).long() # Use 0.5 as threshold
         # predicted_labels = torch.argmax(dir_pred, dim=1)
@@ -156,7 +156,7 @@ for epoch in range(num_epochs):
             curvature_pred, dir_pred, force_pred, force_loc_pred, twist_pred = model(strain_features) #
 
             cur_loss = mse(curvature_pred, curvature_target)
-            force_pred_max = torch.norm(force_pred, dim=1)
+            force_pred_max = force_pred[:, 0]
             force_target_max = torch.norm(force_target, dim=1)
             force_loss = mse(force_pred_max, force_target_max)
             # force_loss = mse(force_pred, force_target)
@@ -278,6 +278,12 @@ with torch.no_grad():
         force_pred_dn_arr = force_pred_arr * (dataset.force.max() - dataset.force.min()) + dataset.force.min()
         force_loc_pred_arr = force_loc_pred.cpu().numpy()
         force_loc_pred_dn_arr = force_loc_pred_arr * (dataset.force_loc_int.max(axis=0) - dataset.force_loc_int.min(axis=0)) + dataset.force_loc_int.min(axis=0)
+        force_pred_dn_arr_out = np.zeros((force_pred_dn_arr.shape[0], 36))
+        row_index = np.arange(force_pred_dn_arr.shape[0])
+        column_index = np.around(force_loc_pred_dn_arr[:, 0]).astype(int)
+        column_index = np.clip(column_index, 0, 35)
+        force_pred_dn_arr_out[row_index, column_index] = force_pred_dn_arr[row_index, 0]
+
         twist_pred_arr = twist_pred.cpu().numpy()
         twist_pred_dn_arr = twist_pred_arr * (dataset.twist.max(axis=0) - dataset.twist.min(axis=0)) + dataset.twist.min(axis=0)
         # acquire the pos_xyz with the Curve2Shape function
@@ -292,7 +298,7 @@ with torch.no_grad():
         pos_yz_shape_error = np.abs(pos_yz_norm_pred - pos_yz_norm_gt)
         pos_xyz_tip_error = np.concatenate((pos_xyz_shap_error[:, 36:37], pos_yz_shape_error[:, 36:37]), axis=1)
         # shape: 36 + 1 + 36 + 1 + 36 + 37*3 + 37 + 37 + 2 = 297
-        prediction = np.concatenate((curvature_pred_dn_arr, predicted_dir, force_pred_dn_arr, force_loc_pred_dn_arr, twist_pred_dn_arr, pos_xyz_pred_dn_arr, pos_x_shape_error, pos_yz_shape_error, pos_xyz_tip_error), axis=1)
+        prediction = np.concatenate((curvature_pred_dn_arr, predicted_dir, force_pred_dn_arr_out, force_loc_pred_dn_arr, twist_pred_dn_arr, pos_xyz_pred_dn_arr, pos_x_shape_error, pos_yz_shape_error, pos_xyz_tip_error), axis=1)
         merged_result = np.concatenate((raw_data, prediction), axis=1)
 
         merged_results.extend(merged_result)
