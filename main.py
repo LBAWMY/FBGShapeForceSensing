@@ -17,12 +17,13 @@ import pandas as pd
 # dataset = CustomDataset(data_dir='./data/data20230819_full.csv')
 # dataset = CustomDataset(data_dir='./data/data20230824_1.csv')
 dataset = CustomDataset(data_dir='./data/data20230828_12c.csv')
-np.random.seed(1024)
-train_dataset, test_dataset = torch.utils.data.random_split(dataset, [int(len(dataset) * 0.8), len(dataset) - int(len(dataset) * 0.8)])
+generator = torch.Generator()
+generator.manual_seed(128)
+train_dataset, test_dataset = torch.utils.data.random_split(dataset,[int(len(dataset) * 0.8), len(dataset) - int(len(dataset) * 0.8)], generator)
 # Create DataLoader for batch processing
 batch_size = 256
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 # Initialize the model
 # # ------------------------------------------------------------------------------------------
@@ -82,7 +83,7 @@ for epoch in range(num_epochs):
         # force_loc1_loss = mse(force_max_index, force_loc_target)
         twist_loss = mse(twist_pred, twist_target)
 
-        loss = cur_loss + force_loss + force_loc_loss + twist_loss # + force_loc1_loss + dir_loss
+        loss = cur_loss + twist_loss # + force_loss + force_loc_loss  + force_loc1_loss + dir_loss
         loss.backward()  # Backpropagation
         optimizer.step()  # Update weights
 

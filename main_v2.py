@@ -19,12 +19,13 @@ import pandas as pd
 # dataset = CustomDataset(data_dir='./data/data20230819_full.csv')
 # dataset = CustomDataset(data_dir='./data/data20230824_1.csv')
 dataset = HMDataset(data_dir='./data/data20230828_12c.csv')
-np.random.seed(1024)
-train_dataset, test_dataset = torch.utils.data.random_split(dataset, [int(len(dataset) * 0.8), len(dataset) - int(len(dataset) * 0.8)])
+generator = torch.Generator()
+generator.manual_seed(128)
+train_dataset, test_dataset = torch.utils.data.random_split(dataset, [int(len(dataset) * 0.8), len(dataset) - int(len(dataset) * 0.8)], generator)
 # Create DataLoader for batch processing
 batch_size = 256
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 # Initialize the model
 # ------------------------------------------------------------------------------------------
@@ -81,6 +82,7 @@ for epoch in range(num_epochs):
         twist_loss = mse(twist_pred, twist_target)
 
         loss = cur_loss + force_loss + force_loc_loss + twist_loss # + dir_loss
+        # loss = force_loss + force_loc_loss
         loss.backward()  # Backpropagation
         optimizer.step()  # Update weights
 
@@ -230,8 +232,8 @@ for epoch in range(num_epochs):
         writer.add_scalar('Test/Accuracy: force loc', test_epoch_force_loc_metric, epoch)
         writer.add_scalar('Test/Accuracy: twist', test_epoch_twist_err_metric, epoch)
 
-        if test_epoch_cur_err_metric < best_metric:
-            best_metric = test_epoch_cur_err_metric
+        if test_epoch_force_loc_metric < best_metric: # test_epoch_force_err_metric, test_epoch_cur_err_metric
+            best_metric = test_epoch_force_loc_metric
             # Save the best model using the SummaryWriter's log_dir
             best_model_path = f"{writer.log_dir}/best_model.pt"
             torch.save(model.state_dict(), best_model_path)
