@@ -16,7 +16,9 @@ import pandas as pd
 # test_dataset = CustomDataset(data_dir='./data/data20230819_2.csv')
 # dataset = CustomDataset(data_dir='./data/data20230819_full.csv')
 # dataset = CustomDataset(data_dir='./data/data20230824_1.csv')
-dataset = CustomDataset(data_dir='./data/data20230828_12c.csv')
+# dataset = CustomDataset(data_dir='./data/data20230828_12c.csv')
+# dataset = CustomDataset(data_dir='./data/data20230910_pure_cuv_twist.csv')
+dataset = CustomDataset(data_dir='./data/data20230912_bending.csv')
 generator = torch.Generator()
 generator.manual_seed(128)
 train_dataset, test_dataset = torch.utils.data.random_split(dataset,[int(len(dataset) * 0.8), len(dataset) - int(len(dataset) * 0.8)], generator)
@@ -50,7 +52,7 @@ model = Conv1DNetwork(input_size, output_size)
 mse = nn.MSELoss()
 bce = nn.BCELoss()
 ce = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.002)
+optimizer = optim.Adam(model.parameters(), lr=0.002, weight_decay=1e-6)
 
 best_metric = np.inf
 best_model_path = 'best_model.pth'
@@ -167,7 +169,7 @@ for epoch in range(num_epochs):
             force_loc_loss = mse(force_loc_pred, force_loc_target)
             twist_loss = mse(twist_pred, twist_target)
 
-            loss = cur_loss + force_loss + force_loc_loss + twist_loss # + dir_loss
+            loss = cur_loss + twist_loss # + dir_loss + force_loss + force_loc_loss
 
             running_cur_loss += cur_loss.item()
             running_force_loss += force_loss.item()
